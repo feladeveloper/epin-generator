@@ -11,7 +11,7 @@ PGS Vouchers is a WordPress plugin designed to generate and manage electronic pi
 ## Directory Structure
 
 Below is the directory structure of the PGS Vouchers plugin:
-
+```
 voucher-plugin/
 ├── PhpSpreadsheet/ # PhpSpreadsheet library files
 ├── apis/ # REST API endpoints
@@ -22,7 +22,7 @@ voucher-plugin/
 ├── batches-table.php # Admin page for batch details
 ├── composer.json # Composer dependencies
 └── index.php # Index file for security
-
+```
 ## Installation
 
 1. Clone or download the plugin repository.
