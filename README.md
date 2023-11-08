@@ -8,6 +8,21 @@ PGS Vouchers is a WordPress plugin designed to generate and manage electronic pi
 - **REST API Endpoints**: Retrieve and redeem e-pins through custom API endpoints.
 - **Batch Management**: View and manage batches of generated e-pins.
 
+## Directory Structure
+
+Below is the directory structure of the PGS Vouchers plugin:
+
+voucher-plugin/
+├── PhpSpreadsheet/ # PhpSpreadsheet library files
+├── apis/ # REST API endpoints
+│ ├── get-voucher.php # Endpoint to get voucher details
+│ └── redeem-voucher.php # Endpoint to redeem a voucher
+├── voucher.php # Main plugin file
+├── README.txt # README file
+├── batches-table.php # Admin page for batch details
+├── composer.json # Composer dependencies
+└── index.php # Index file for security
+
 ## Installation
 
 1. Clone or download the plugin repository.
