@@ -190,5 +190,3 @@ if (isset($_POST['generate_pins'])) {
 include PGS_VOUCHERS . 'batches-table.php';
 include PGS_VOUCHERS . 'apis/get-voucher.php';
 include PGS_VOUCHERS . 'apis/redeem-voucher.php'; 
-
-
