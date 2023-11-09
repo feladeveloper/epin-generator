@@ -189,4 +189,6 @@ if (isset($_POST['generate_pins'])) {
 // Use a library like PHPExcel to create Excel files
 include PGS_VOUCHERS . 'batches-table.php';
 include PGS_VOUCHERS . 'apis/get-voucher.php';
-include PGS_VOUCHERS . 'apis/redeem-voucher.php';
+include PGS_VOUCHERS . 'apis/redeem-voucher.php'; 
+
+
