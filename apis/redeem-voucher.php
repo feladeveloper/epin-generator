@@ -9,38 +9,46 @@
  * @param WP_REST_Request $request The request object containing 'voucher_pin'.
  * @return WP_REST_Response The response object with the operation result.
  */
-function pgs_redeem_voucher($request) {
-    $voucher_pin = sanitize_text_field($request->get_param('voucher_pin'));
-
+function pgs_redeem_voucher($voucher_pin) {
     global $wpdb;
     $voucher_table_name = $wpdb->prefix . 'epin_vouchers';
 
     // Check if the voucher exists and is active.
-    $existing_voucher = $wpdb->get_row(
-        $wpdb->prepare("SELECT id FROM $voucher_table_name WHERE voucher_pin = %s AND status = 'active'", $voucher_pin),
-        ARRAY_A
-    );
+    $voucher = $wpdb->get_row($wpdb->prepare(
+        "SELECT id, status FROM $voucher_table_name WHERE voucher_pin = %s", 
+        $voucher_pin
+    ));
 
-    // Respond with an error if the voucher is not found or already used.
-    if (is_null($existing_voucher)) {
-        return new WP_REST_Response('Voucher not found or already used', 404);
+    // Return an error if the voucher is not found or already used.
+    if (!$voucher || $voucher->status !== 'active') {
+        return array(
+            'success' => false,
+            'message' => 'Voucher not found or already used'
+        );
     }
 
     // Attempt to update the voucher status to 'used'.
     $updated = $wpdb->update(
         $voucher_table_name,
         array('status' => 'used'),
-        array('voucher_pin' => $voucher_pin)
+        array('id' => $voucher->id)
     );
 
-    // Respond with an error if the update failed.
+    // Return an error if the update failed.
     if ($updated === false) {
-        return new WP_REST_Response('Failed to redeem voucher', 500);
+        return array(
+            'success' => false,
+            'message' => 'Failed to redeem voucher'
+        );
     }
 
-    // Return a success message if the voucher was redeemed.
-    return new WP_REST_Response('Voucher redeemed successfully', 200);
+    // Voucher was redeemed successfully.
+    return array(
+        'success' => true,
+        'message' => 'Voucher redeemed successfully'
+    );
 }
+
 
 /**
  * Registers the redeem voucher route with the WordPress REST API.
