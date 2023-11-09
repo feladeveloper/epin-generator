@@ -18,7 +18,7 @@ if (!defined('PGS_VOUCHERS')) {
     define('PGS_VOUCHERS', plugin_dir_path(__FILE__));
 }
 // Include the WooCommerce payment gateway if WooCommerce is active.
-if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+if (in_array(ABSPATH.'wp-content/plugins/woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
     require_once PGS_VOUCHERS . 'payment/wc-payment-gateway-voucher.php';
 }
 /**
