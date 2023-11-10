@@ -17,10 +17,16 @@ use PhpOffice\PhpSpreadsheet\Writer\Xls;
 if (!defined('PGS_VOUCHERS')) {
     define('PGS_VOUCHERS', plugin_dir_path(__FILE__));
 }
+
 // Include the WooCommerce payment gateway if WooCommerce is active.
-if (in_array(ABSPATH.'wp-content/plugins/woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
-    require_once PGS_VOUCHERS . 'payment/wc-payment-gateway-voucher.php';
+function include_pgs_payment_gateway_file() {
+    if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+        require_once PGS_VOUCHERS . 'payment/wc-payment-gateway-voucher.php';
+    } 
 }
+// Hook to the plugins_loaded action
+add_action('plugins_loaded', 'include_pgs_payment_gateway_file');
+
 /**
  * Plugin activation hook.
  * Creates necessary database tables for storing e-pin batches and individual vouchers.
@@ -176,11 +182,12 @@ if (isset($_POST['generate_pins'])) {
         $excelWriter->save($file);
 
         $current_user = get_current_user();
-        $to = "dajooe@gmail.com";
-        $subject = 'Generated E-Pins';
+        $email = $current_user->user_email;
+        $to = $email;
+        $subject = 'BuyByRaffle Vouchers';
         $message = 'Attached is your generated E-Pins.';
         $headers = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'From: Your name <info@address.com>' . "\r\n";
+        $headers .= 'From: BuyByRaffle Team<'.get_option('admin_email').'>' . "\r\n";
         $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
         $headers = 'Content-Type: text/html; charset=UTF-8';
         $attachments = array($file);
