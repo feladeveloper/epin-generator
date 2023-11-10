@@ -136,6 +136,7 @@ function epin_management_page() {
             global $wpdb;
             $current_user = wp_get_current_user();
             $user_id = $current_user->ID;
+            $username = $current_user->user_login;
             $batch_table_name = $wpdb->prefix . 'epin_batches';
             $voucher_table_name = $wpdb->prefix . 'epin_vouchers';
             $denomination = floatval(get_option('pgs_voucher_denomination'));
@@ -174,12 +175,14 @@ function epin_management_page() {
             $sheet->setCellValue('B1', 'Batch ID');
             $sheet->setCellValue('C1', 'Created By');
             $sheet->setCellValue('D1', 'Date Created');
+            $sheet->setCellValue('E1', 'Status');
             $row = 2;   
             foreach ($pins as $pin) {
                 $sheet->setCellValue('A' . $row, $pin);
                 $sheet->setCellValue('B' . $row, $batch_id);
-                $sheet->setCellValue('C' . $row, $user_id);
+                $sheet->setCellValue('C' . $row, $username);
                 $sheet->setCellValue('D' . $row, $date_created);
+                $sheet->setCellValue('D' . $row, 'Active');
                 $row++;
             }
 
