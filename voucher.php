@@ -17,10 +17,16 @@ use PhpOffice\PhpSpreadsheet\Writer\Xls;
 if (!defined('PGS_VOUCHERS')) {
     define('PGS_VOUCHERS', plugin_dir_path(__FILE__));
 }
+
 // Include the WooCommerce payment gateway if WooCommerce is active.
-if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
-    require_once PGS_VOUCHERS . 'payment/wc-payment-gateway-voucher.php';
+function include_pgs_payment_gateway_file() {
+    if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+        require_once PGS_VOUCHERS . 'payment/wc-payment-gateway-voucher.php';
+    } 
 }
+// Hook to the plugins_loaded action
+add_action('plugins_loaded', 'include_pgs_payment_gateway_file');
+
 /**
  * Plugin activation hook.
  * Creates necessary database tables for storing e-pin batches and individual vouchers.
@@ -106,87 +112,97 @@ function epin_management_page() {
         </form>
     </div>
     <?php
-}
 
-/**
- * Processes the form submission for generating pins.
- * Validates nonce and user capability before generating pins.
- * Sanitizes form inputs and inserts new pins into the database.
- * Also generates an Excel file with the new pins and possibly send email...
- */
-if (isset($_POST['generate_pins'])) {
-        // Check the nonce value for security
-        if (!isset($_POST['generate_pins_nonce']) || !wp_verify_nonce($_POST['generate_pins_nonce'], 'generate_pins_action')) {
-            wp_die(__('Sorry, your nonce did not verify.', 'text-domain'));
-        }
-    
-        // Check user capability
-        if (!current_user_can('manage_options')) {
-            wp_die(__('You do not have sufficient permissions to access this page.'));
-        }
-    
-        // Sanitize and validate form input
-        $num_pins = isset($_POST['num_pins']) ? intval(sanitize_text_field($_POST['num_pins'])) : 0;
-        global $wpdb;
-        $current_user = wp_get_current_user();
-        $user_id = $current_user->ID;
-        $batch_table_name = $wpdb->prefix . 'epin_batches';
-        $voucher_table_name = $wpdb->prefix . 'epin_vouchers';
-        $denomination = floatval(get_option('pgs_voucher_denomination'));
-        // Insert a record in the batch table
-        $batch_data = array(
-            'created_by' => $user_id,
-            'number_of_pins' => $num_pins,
-            'denomination' => $denomination,
-            'status' => 'active',
-            'date_created' => current_time('mysql'),
-        );
-        $wpdb->insert($batch_table_name, $batch_data);
-        //Add Batch ID
-        $batch_id = 'PGS-' . $wpdb->insert_id; // Concatenate "PGS" with the auto-incremented ID
 
-        // Update the batch with the generated batch ID
-        $add_batch_id = $wpdb->update($batch_table_name, array('batch_id' => $batch_id), array('id' => $wpdb->insert_id));
-        // Generate e-pins and insert them into the voucher table
-        $pins = array();
-        for ($i = 0; $i < $num_pins; $i++) {
-            $pin = generate_random_pin(); // Implement this function to generate a random 10-digit pin
-            $pins[] = $pin;
-            $voucher_data = array(
-                'voucher_pin' => $pin,
-                'batch_id' => $batch_id,
+    /**
+     * Processes the form submission for generating pins.
+     * Validates nonce and user capability before generating pins.
+     * Sanitizes form inputs and inserts new pins into the database.
+     * Also generates an Excel file with the new pins and possibly send email...
+     */
+    if (isset($_POST['generate_pins'])) {
+            // Check the nonce value for security
+            if (!isset($_POST['generate_pins_nonce']) || !wp_verify_nonce($_POST['generate_pins_nonce'], 'generate_pins_action')) {
+                wp_die(__('Sorry, your nonce did not verify.', 'text-domain'));
+            }
+        
+            // Check user capability
+            if (!current_user_can('manage_options')) {
+                wp_die(__('You do not have sufficient permissions to access this page.'));
+            }
+        
+            // Sanitize and validate form input
+            $num_pins = isset($_POST['num_pins']) ? intval(sanitize_text_field($_POST['num_pins'])) : 0;
+            global $wpdb;
+            $current_user = wp_get_current_user();
+            $user_id = $current_user->ID;
+            $username = $current_user->user_login;
+            $batch_table_name = $wpdb->prefix . 'epin_batches';
+            $voucher_table_name = $wpdb->prefix . 'epin_vouchers';
+            $denomination = floatval(get_option('pgs_voucher_denomination'));
+            $date_created = current_time('mysql');
+            // Insert a record in the batch table
+            $batch_data = array(
+                'created_by' => $user_id,
+                'number_of_pins' => $num_pins,
+                'denomination' => $denomination,
                 'status' => 'active',
+                'date_created' => $date_created,
             );
-            $wpdb->insert($voucher_table_name, $voucher_data);
-        }
+            $wpdb->insert($batch_table_name, $batch_data);
+            //Add Batch ID
+            $batch_id = 'PGS-' . $wpdb->insert_id; // Concatenate "PGS" with the auto-incremented ID
 
-        // Create an Excel file with the generated pins
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setCellValue('A1', 'E-Pins');
-        $row = 2;   
-        foreach ($pins as $pin) {
-            $sheet->setCellValue('A' . $row, $pin);
-            $row++;
-        }
+            // Update the batch with the generated batch ID
+            $add_batch_id = $wpdb->update($batch_table_name, array('batch_id' => $batch_id), array('id' => $wpdb->insert_id));
+            // Generate e-pins and insert them into the voucher table
+            $pins = array();
+            for ($i = 0; $i < $num_pins; $i++) {
+                $pin = generate_random_pin(); // Implement this function to generate a random 10-digit pin
+                $pins[] = $pin;
+                $voucher_data = array(
+                    'voucher_pin' => $pin,
+                    'batch_id' => $batch_id,
+                    'status' => 'active',
+                );
+                $wpdb->insert($voucher_table_name, $voucher_data);
+            }
 
-        $excelWriter = new Xls($spreadsheet);
-        $file = wp_upload_dir()['path'] . '/generated_pins.xls';
-        //$file = '\wp-content\uploads\2023\10\generated_pins.xls';
-        $excelWriter->save($file);
+            // Create an Excel file with the generated pins
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setCellValue('A1', 'E-Pins');
+            $sheet->setCellValue('B1', 'Batch ID');
+            $sheet->setCellValue('C1', 'Created By');
+            $sheet->setCellValue('D1', 'Date Created');
+            $sheet->setCellValue('E1', 'Status');
+            $row = 2;   
+            foreach ($pins as $pin) {
+                $sheet->setCellValue('A' . $row, $pin);
+                $sheet->setCellValue('B' . $row, $batch_id);
+                $sheet->setCellValue('C' . $row, $username);
+                $sheet->setCellValue('D' . $row, $date_created);
+                $sheet->setCellValue('D' . $row, 'Active');
+                $row++;
+            }
 
-        $current_user = get_current_user();
-        $to = "dajooe@gmail.com";
-        $subject = 'Generated E-Pins';
-        $message = 'Attached is your generated E-Pins.';
-        $headers = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'From: Your name <info@address.com>' . "\r\n";
-        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $headers = 'Content-Type: text/html; charset=UTF-8';
-        $attachments = array($file);
-        //wp_mail($to, $subject, $message, $headers, $file);
-}
+            $excelWriter = new Xls($spreadsheet);
+            $file = wp_upload_dir()['path'] . '/generated_pins.xls';
+            //$file = '\wp-content\uploads\2023\10\generated_pins.xls';
+            $excelWriter->save($file);
+            $email = wp_get_current_user();
+            $to = $email;
+            $subject = 'BuyByRaffle Vouchers';
+            $message = 'Attached is your generated E-Pins.';
+            $headers = 'MIME-Version: 1.0' . "\r\n";
+            $headers .= 'From: BuyByRaffle Team<'.get_option('admin_email').'>' . "\r\n";
+            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+            $headers = 'Content-Type: text/html; charset=UTF-8';
+            $attachments = array($file);
+            //wp_mail($to, $subject, $message, $headers, $file);
+    }
+} 
 // Use a library like PHPExcel to create Excel files
 include PGS_VOUCHERS . 'batches-table.php';
 include PGS_VOUCHERS . 'apis/get-voucher.php';
-include PGS_VOUCHERS . 'apis/redeem-voucher.php';
+include PGS_VOUCHERS . 'apis/redeem-voucher.php'; 

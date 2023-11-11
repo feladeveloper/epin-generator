@@ -32,7 +32,6 @@ class WC_Gateway_PGS_Voucher extends WC_Payment_Gateway {
         // Load the settings.
         $this->init_form_fields();
         $this->init_settings();
-
         $this->title        = $this->get_option('title');
         $this->description  = $this->get_option('description');
         $this->instructions = $this->get_option('instructions', $this->description);
