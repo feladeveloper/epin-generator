@@ -116,7 +116,7 @@ class BuyByRaffleCycleHandler {
                 $errorMessage = "Unexpected environment type: $environment";
                 error_log($errorMessage);
 
-                // Send an email notification
+                // Send an email notification ///////
                 $to = 'terungwa@cashtoken.africa'; // Replace with your admin email address
                 $subject = 'Configuration Error in BuyByRaffleCycleHandler';
                 $message = "An error occurred in the BuyByRaffleCycleHandler: $errorMessage";
