@@ -1,78 +1,112 @@
-# PGS Vouchers Plugin for WordPress
 
-PGS Vouchers is a WordPress plugin designed to generate and manage electronic pins (e-pins) that can be used as vouchers within your WordPress site. This plugin provides an admin interface for creating batches of e-pins, a REST API for retrieving and redeeming e-pins, and a way to visualize batch details.
+# BuyByRaffle Plugin Coding Guide
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Features](#features)
+- [Installation](#installation)
+- [Contribution](#contribution)
+- [Coding Guide](#coding-guide)
+  - [Directory Structure](#directory-structure)
+  - [Description](#description)
+  - [Naming Conventions and Autoloading](#naming-conventions-and-autoloading)
+  - [Method Naming](#method-naming)
+  - [Comments and Documentation](#comments-and-documentation)
+  - [Exception Handling](#exception-handling)
+  - [Database](#database)
+  - [WordPress Hooks](#wordpress-hooks)
+  - [Miscellaneous](#miscellaneous)
+
+## Introduction
+
+The BuyByRaffle plugin is an innovative addition to the WooCommerce store, integrating raffles into the shopping experience. This README provides all the necessary information to understand, install, and contribute to the plugin.
 
 ## Features
 
-- **E-Pin Generation**: Generate e-pins with a simple admin interface.
-- **REST API Endpoints**: Retrieve and redeem e-pins through custom API endpoints.
-- **Batch Management**: View and manage batches of generated e-pins.
+- Adds a new product attribute to WooCommerce for categorizing products as 'Hero' or 'Bait'.
+- Creates and manages custom database tables for raffles, tickets, logs, and queued raffles.
+- Updates raffle status based on associated products.
+- Makes 'Hero' products non-purchasable and removes them from archives and search results.
 
-## Directory Structure
-
-Below is the directory structure of the PGS Vouchers plugin:
-```
-voucher-plugin/
-├── PhpSpreadsheet/ # PhpSpreadsheet library files
-├── apis/ # REST API endpoints
-│ ├── get-voucher.php # Endpoint to get voucher details
-│ └── redeem-voucher.php # Endpoint to redeem a voucher
-├── voucher.php # Main plugin file
-├── README.txt # README file
-├── batches-table.php # Admin page for batch details
-├── composer.json # Composer dependencies
-└── index.php # Index file for security
-```
 ## Installation
 
-1. Clone or download the plugin repository.
-2. If you haven't already, install Composer to manage dependencies. Then run `composer install` in the plugin directory to install PHP Office Spreadsheet.
-3. Upload the plugin files to your `/wp-content/plugins/pgs-vouchers` directory, or install the plugin through the WordPress plugins screen directly.
-4. Activate the plugin through the 'Plugins' screen in WordPress.
+1. Download the plugin ZIP file from the GitHub repository.
+2. Go to your WordPress admin panel and navigate to 'Plugins -> Add New'.
+3. Click the 'Upload Plugin' button and choose the downloaded ZIP file.
+4. After uploading, click 'Activate' to enable the plugin on your WooCommerce store.
+5. Verify that the plugin is working by going to a WooCommerce product and checking for a new attribute for 'BuyByRaffle Product Group'. Also check if 4 custom tables have been created in the database: raffles, tickets, logs, and queued raffles.
 
-## Usage
+## Contribution
 
-### Admin Interface
+If you'd like to contribute to this project, please follow the coding guidelines as outlined in the 'Coding Guide' segment below. All contributions should be made via pull requests on GitHub.
 
-Navigate to the 'E-Pin Management' page in the WordPress admin menu. Here, you can generate new e-pins by specifying the number of pins you want to create.
+## Coding Guide
 
-### REST API Endpoints
+### Directory Structure
 
-#### Retrieve E-Pin Details
+```
+- BuyByRaffle
+  |-- Includes
+  |   |-- BuyByRaffleHeroProductHandler.php
+  |   |-- BuyByRaffleProductAttributeHandler.php
+  |   |-- BuyByRaffleProductFieldHandler.php
+  |   |-- BuyByRaffleStatusUpdaterHandler.php
+  |   |-- BuyByRaffleTableInstallerHandler.php
+  |-- js
+  |-- css
+  |-- autoloader.php
+  |-- buybyraffle.php
+  |-- uninstall.php
+```
 
-- **GET** `/wp-json/pgs/v1/voucher`
-- Parameters:
-  - `voucher_pin`: The pin of the voucher you want to retrieve.
+### Description
 
-#### Redeem E-Pin
+- **BuyByRaffle**: Root directory containing all files and folders related to the plugin.
+- **Includes**: Directory containing all the class files that handle specific functionalities.
+- **js**: Directory for JavaScript files.
+- **css**: Directory for CSS files.
+- **autoloader.php**: Autoloader script for the plugin.
+- **buybyraffle.php**: The main file that initiates the plugin.
+- **uninstall.php**: File to handle uninstallation logic.
 
-- **POST** `/wp-json/pgs/v1/redeem-voucher`
-- Parameters:
-  - `voucher_pin`: The pin of the voucher you want to redeem.
+### Naming Conventions and Autoloading
 
-### Viewing Batch Details
+#### Classes
 
-Navigate to the 'Batch Details' submenu under the 'E-Pin Management' menu to view details of generated batches.
+- Class names should be in PascalCase.
+- Filenames should match the class names and should also be in PascalCase. E.g., a class `BuyByRaffleStatusUpdater` should be in a file named `BuyByRaffleStatusUpdater.php`.
 
-## Contributing
+#### Autoloading
 
-Contributions are welcome from the community. To contribute:
+The autoloading mechanism is defined in `autoloader.php`. It uses the `spl_autoload_register` function. Classes are autoloaded based on their names and expected directory location.
 
-1. Fork the repository.
-2. Create a new branch for each feature or improvement.
-3. Send a pull request from each feature branch to the main branch.
+### Method Naming
 
-Please follow the WordPress coding standards for PHP, HTML, and JavaScript.
+- Methods within classes should use camelCase.
 
-## Dependencies
+### Comments and Documentation
 
-- [PHP Office Spreadsheet](https://github.com/PHPOffice/PhpSpreadsheet): Used for generating Excel files containing lists of generated e-pins.
+- Use DocBlocks for class and method documentation.
+- Inline comments should be used to explain complex sections of code.
 
-## Support
+### Exception Handling
 
-If you encounter any problems or have any queries about using the plugin, please submit an issue on the GitHub repository.
+- Use try-catch blocks for error-prone sections of code.
+- Log exceptions for debugging.
 
-## License
+### Database
 
-The PGS Vouchers plugin is open-sourced software licensed under the GPL v2 or later.
+- Custom tables are handled in the `BuyByRaffleTableInstaller` class.
 
+### WordPress Hooks
+
+- WordPress hooks (actions and filters) are primarily registered within class constructors.
+
+### Miscellaneous
+
+- Always ensure compatibility with WooCommerce as it's a required dependency.
+
+## Conclusion
+
+This guide should be reviewed and updated as the project evolves.
