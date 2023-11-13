@@ -183,7 +183,7 @@ function epin_management_page() {
                 $sheet->setCellValue('B' . $row, $batch_id);
                 $sheet->setCellValue('C' . $row, $username);
                 $sheet->setCellValue('D' . $row, $date_created);
-                $sheet->setCellValue('D' . $row, 'Active');
+                $sheet->setCellValue('E' . $row, 'Active');
                 $row++;
             }
 
