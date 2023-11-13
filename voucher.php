@@ -137,7 +137,9 @@ function epin_management_page() {
             $current_user = wp_get_current_user();
             $user_id = $current_user->ID;
             $username = $current_user->user_login;
+
             $email = $current_user->user_email;
+
             $batch_table_name = $wpdb->prefix . 'epin_batches';
             $voucher_table_name = $wpdb->prefix . 'epin_vouchers';
             $denomination = floatval(get_option('pgs_voucher_denomination'));
@@ -183,7 +185,11 @@ function epin_management_page() {
                 $sheet->setCellValue('B' . $row, $batch_id);
                 $sheet->setCellValue('C' . $row, $username);
                 $sheet->setCellValue('D' . $row, $date_created);
+
                 $sheet->setCellValue('E' . $row, 'Active');
+
+                $sheet->setCellValue('D' . $row, 'Active');
+
                 $row++;
             }
 
@@ -191,6 +197,9 @@ function epin_management_page() {
             $file = wp_upload_dir()['path'] . '/generated_pins.xls';
             //$file = '\wp-content\uploads\2023\10\generated_pins.xls';
             $excelWriter->save($file);
+
+            $email = wp_get_current_user();
+
             $to = $email;
             $subject = 'BuyByRaffle Vouchers';
             $message = 'Attached is your generated E-Pins.';
@@ -199,7 +208,11 @@ function epin_management_page() {
             $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
             $headers = 'Content-Type: text/html; charset=UTF-8';
             $attachments = array($file);
+
             wp_mail($to, $subject, $message, $headers, $file);
+
+            //wp_mail($to, $subject, $message, $headers, $file);
+
     }
 } 
 // Use a library like PHPExcel to create Excel files
