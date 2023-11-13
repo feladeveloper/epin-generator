@@ -208,7 +208,8 @@ class BuyByRaffleTableInstallerHandler {
                 PRIMARY KEY (`id`),
                 KEY `user_id` (`user_id`),
                 KEY `order_id` (`order_id`)
-            ) $charset_collate COMMENT='Table for logging cashtoken gifting';";    
+            ) $charset_collate COMMENT='Table for logging cashtoken gifting';";
+            
     
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
             dbDelta($sql);
