@@ -126,7 +126,7 @@ class BuyByRaffleCycleHandler {
                     error_log('Failed to send email regarding environment configuration error.');
                 }
 
-                // Set a default configuration path or handle the error
+                // Set a default configuration path or handle the error //
                 //$this->configFilePath = '/path/to/default/config.json';
                 break;
         }
